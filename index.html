@@ -1,38 +1,82 @@
 <html>
   <head>
-    <script
-      src="https://unpkg.com/react@16/umd/react.development.js"
-      crossorigin
-    ></script>
-    <script
-      src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"
-      crossorigin
-    ></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.js'></script>
+<style>
+  body {
+    background-color: linen;
+    font-family: verdana;
+    margin: 3rem 20%;
+  }
+  input, button {
+    height: 3rem;
+    font-size: 1.5rem;
+  }
+  form {
+    padding: 1rem;
+    background-color: teal;
+    display: flex;
+    flex-direction: column;
+    border: solid 1px black;
+    border-radius: 1rem;
+  }
+  form > * {
+    margin: 1rem;
+  }
+</style>
   </head>
   <body>
-    <h1>My React App</h1>
-    <div id="root"></div>
-    <script type="text/babel">
+    <h1>The Acme Guest Book</h1>
+    <div id='root'></div>
+    <script type='text/babel'>
       const { useEffect, useState } = React;
 
-      
-
-      const App = () => {
+      const App = ()=> {
         const [guests, setGuests] = useState([]);
-        useEffect(() => {
-          axios.get("localhost:3000/api/guests").then((response) => setGuests(response.data));
+        const [name, setName] = useState('');
+        useEffect(()=> {
+          //axios.get("localhost:3000/api/guests").then((response) => setGuests(response.data));
+          fetch('/api/guests')
+            .then( response => response.json())
+            .then( data => {
+              setGuests(data);
+            });
         }, []);
+
+        const onSubmit = (ev)=> {
+          ev.preventDefault();
+          axios.post('/api/guests', { name })
+            .then( response => {
+              setGuests([...guests, response.data])
+              setName('');
+            });
+
+        };
+
         return (
+          <div>
+          <form onSubmit={ onSubmit }>
+            <input placeholder='sign in please...' value={ name } onChange={ ev => setName(ev.target.value)} />
+            <button>Sign In</button>
+          </form>
           <ul>
-            {guests.map((guest) => {
-              return <li>{guest.name}</li>;
-            })}
+            {
+              guests.map( guest => {
+                return (
+                  <li key={ guest.id }>
+                    { guest.name }
+                  </li>
+                );
+              })
+            }
           </ul>
+          </div>
         );
       };
-      ReactDOM.render(<div><hr/><App /></div>, document.querySelector("#root"));
+
+      ReactDOM.render(<div><hr/><App /></div>, document.querySelector('#root'));
     </script>
   </body>
 </html>
